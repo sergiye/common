@@ -9,13 +9,14 @@ namespace sergiye.Common {
     public static readonly Color DefaultStatusErrorColor = Color.OrangeRed;
 
     public DarkTheme() : base("dark", "Dark") {
+
       ForegroundColor = ColorTranslator.FromHtml("#DADADA");
       BackgroundColor = Color.Black;
-      HyperlinkColor = Color.OrangeRed;
+      HyperlinkColor = ColorTranslator.FromHtml("#90E6E8");
       SelectedForegroundColor = ColorTranslator.FromHtml("#DADADA");
-      SelectedBackgroundColor = ColorTranslator.FromHtml("#2170CF");
-      LineColor = Color.FromArgb(38, 38, 38);
-      StrongLineColor = Color.FromArgb(53, 53, 53);
+      SelectedBackgroundColor = ColorTranslator.FromHtml("#2B5278");
+      LineColor = ColorTranslator.FromHtml("#070A12");
+      StrongLineColor = ColorTranslator.FromHtml("#091217");
       WindowTitlebarFallbackToImmersiveDarkMode = true;
       StatusOkColor = DefaultStatusOkColor;
       StatusInfoColor = DefaultStatusInfoColor;

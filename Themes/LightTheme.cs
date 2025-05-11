@@ -10,7 +10,7 @@ namespace sergiye.Common {
     public LightTheme() : base("light", "Light") {
       ForegroundColor = Color.Black;
       BackgroundColor = Color.White;
-      HyperlinkColor = Color.OrangeRed;
+      HyperlinkColor = Color.FromArgb(0, 0, 255);
       SelectedForegroundColor = ForegroundColor;
       SelectedBackgroundColor = Color.CornflowerBlue;
       LineColor = Color.FromArgb(247, 247, 247);

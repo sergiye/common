@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+#if TREEVIEWADV
+using Aga.Controls.Tree;
+#endif
 using Microsoft.Win32;
 
 namespace sergiye.Common {
@@ -23,18 +24,69 @@ namespace sergiye.Common {
     }
 
     private static void Init() {
-      //todo: apply custom renders
-    }
+#if TREEVIEWADV
+      TreeViewAdv.CustomPlusMinusRenderFunc = (g, rect, isExpanded) => {
+        int x = rect.Left;
+        int y = rect.Top + 5;
+        int size = 8;
+        using (Brush brush = new SolidBrush(Current.BackgroundColor)) {
+          g.FillRectangle(brush, x - 1, y - 1, size + 4, size + 4);
+        }
+        using (Pen pen = new Pen(Current.TreeOutlineColor)) {
 
-    private static List<Theme> all;
-    public static List<Theme> All {
-      get {
-        all ??= CustomTheme.GetAllThemes().OrderBy(x => x.DisplayName).ToList();
-        return all;
-      }
+          g.DrawRectangle(pen, x, y, size, size);
+          g.DrawLine(pen, x + 2, y + size / 2, x + size - 2, y + size / 2);
+          if (!isExpanded) {
+            g.DrawLine(pen, x + size / 2, y + 2, x + size / 2, y + size - 2);
+          }
+        }
+      };
+
+      TreeViewAdv.CustomCheckRenderFunc = (g, rect, isChecked) => {
+        int x = rect.Left;
+        int y = rect.Top + 1;
+        int size = 12;
+        using (Brush brush = new SolidBrush(Current.BackgroundColor)) {
+          g.FillRectangle(brush, x - 1, y - 1, 12, 12);
+        }
+        using (Pen pen = new Pen(Current.TreeOutlineColor)) {
+          g.DrawRectangle(pen, x, y, size, size);
+          if (isChecked) {
+            x += 3;
+            y += 3;
+            g.DrawLine(pen, x, y + 3, x + 2, y + 5);
+            g.DrawLine(pen, x + 2, y + 5, x + 6, y + 1);
+            g.DrawLine(pen, x, y + 4, x + 2, y + 6);
+            g.DrawLine(pen, x + 2, y + 6, x + 6, y + 2);
+          }
+        }
+      };
+
+      TreeViewAdv.CustomColumnBackgroundRenderFunc = (g, rect, isPressed, isHot) => {
+        using (Brush brush = new SolidBrush(Current.TreeBackgroundColor)) {
+          g.FillRectangle(brush, rect);
+        }
+        using (Pen pen = new Pen(Current.TreeRowSepearatorColor)) {
+          g.DrawLine(pen, rect.Left, rect.Top, rect.Right, rect.Top);
+          g.DrawLine(pen, rect.Left, rect.Top + 1, rect.Right, rect.Top + 1);
+        }
+      };
+
+      TreeViewAdv.CustomColumnTextRenderFunc = (g, rect, font, text) => {
+        TextRenderer.DrawText(g, text, font, rect, Current.TreeTextColor, TextFormatFlags.Left);
+      };
+
+      TreeViewAdv.CustomHorizontalLinePen = new Pen(Current.TreeRowSepearatorColor);
+      TreeViewAdv.CustomSelectedRowBrush = new SolidBrush(Current.TreeSelectedBackgroundColor);
+      TreeViewAdv.CustomSelectedTextColor = Current.TreeSelectedTextColor;
+#endif
     }
 
     public static bool SupportsAutoThemeSwitching() {
+      if (OperatingSystem.IsUnix) {
+        return false;
+      }
+
       if (Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", -1) is int useLightTheme) {
         return useLightTheme != -1;
       }
@@ -42,6 +94,10 @@ namespace sergiye.Common {
     }
 
     public static void SetAutoTheme() {
+      if (OperatingSystem.IsUnix) {
+        return;
+      }
+
       if (Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1) is int useLightTheme) {
         if (useLightTheme > 0) {
           Current = new LightTheme();
@@ -115,16 +171,16 @@ namespace sergiye.Common {
       if (IsWindows10OrGreater(22000)) {
         // Windows 11, Set the titlebar color based on theme
         var color = ColorTranslator.ToWin32(WindowTitlebarBackgroundColor);
-        DwmSetWindowAttribute(form.Handle, DwmwaCaptionColor, ref color, sizeof(int));
+        DwmSetWindowAttribute(form.Handle, DWMWA_CAPTION_COLOR, ref color, sizeof(int));
         color = ColorTranslator.ToWin32(WindowTitlebarForegroundColor);
-        DwmSetWindowAttribute(form.Handle, DwmwaTextColor, ref color, sizeof(int));
+        DwmSetWindowAttribute(form.Handle, DWMWA_TEXT_COLOR, ref color, sizeof(int));
       }
       else if (IsWindows10OrGreater(17763)) {
         // Windows 10, fallback to using "Immersive Dark Mode" instead
-        var attribute = DwmwaUseImmersiveDarkModeBefore20H1;
+        var attribute = DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1;
         if (IsWindows10OrGreater(18985)) {
           // Windows 10 20H1 or later
-          attribute = DwmwaUseImmersiveDarkMode;
+          attribute = DWMWA_USE_IMMERSIVE_DARK_MODE;
         }
         var useImmersiveDarkMode = WindowTitlebarFallbackToImmersiveDarkMode ? 1 : 0;
         DwmSetWindowAttribute(form.Handle, attribute, ref useImmersiveDarkMode, sizeof(int));
@@ -154,6 +210,13 @@ namespace sergiye.Common {
       else if (control is LinkLabel linkLabel) {
         linkLabel.LinkColor = HyperlinkColor;
       }
+#if TREEVIEWADV
+      else if (control is TreeViewAdv treeView) {
+        treeView.BackColor = TreeBackgroundColor;
+        treeView.ForeColor = TreeTextColor;
+        treeView.LineColor = TreeOutlineColor;
+      }
+#endif
       else {
         control.BackColor = BackgroundColor;
         control.ForeColor = ForegroundColor;
@@ -180,14 +243,14 @@ namespace sergiye.Common {
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
 
-    private const int DwmwaUseImmersiveDarkModeBefore20H1 = 19;
-    private const int DwmwaUseImmersiveDarkMode = 20;
-    private const int DwmwaBorderColor = 34;
-    private const int DwmwaCaptionColor = 35;
-    private const int DwmwaTextColor = 36;
+    private const int DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19;
+    private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+    private const int DWMWA_BORDER_COLOR = 34;
+    private const int DWMWA_CAPTION_COLOR = 35;
+    private const int DWMWA_TEXT_COLOR = 36;
 
     private static bool IsWindows10OrGreater(int build = -1) {
-      return Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Build >= build;
+      return !OperatingSystem.IsUnix && Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Build >= build;
     }
   }
 }
