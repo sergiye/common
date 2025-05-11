@@ -83,7 +83,7 @@ namespace sergiye.Common {
     }
 
     public static bool SupportsAutoThemeSwitching() {
-      if (OperatingSystem.IsUnix) {
+      if (OperatingSystemHelper.IsUnix) {
         return false;
       }
 
@@ -94,7 +94,7 @@ namespace sergiye.Common {
     }
 
     public static void SetAutoTheme() {
-      if (OperatingSystem.IsUnix) {
+      if (OperatingSystemHelper.IsUnix) {
         return;
       }
 
@@ -250,7 +250,7 @@ namespace sergiye.Common {
     private const int DWMWA_TEXT_COLOR = 36;
 
     private static bool IsWindows10OrGreater(int build = -1) {
-      return !OperatingSystem.IsUnix && Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Build >= build;
+      return !OperatingSystemHelper.IsUnix && Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Build >= build;
     }
   }
 }
