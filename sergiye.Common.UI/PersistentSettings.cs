@@ -13,7 +13,7 @@ namespace sergiye.Common {
     private IDictionary<string, string> settings = new Dictionary<string, string>();
 
     public PersistentSettings() {
-      configFilePath = Path.ChangeExtension(Application.ExecutablePath, ".config");
+      configFilePath = Path.ChangeExtension(Updater.CurrentFileLocation, ".config");
     }
 
     public void Load() {

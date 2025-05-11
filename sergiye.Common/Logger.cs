@@ -2,9 +2,9 @@
 
 namespace sergiye.Common {
 
-  internal class Logger {
+  public class Logger {
 
-    internal enum StateKind {
+    public enum StateKind {
       Log,
       Info,
       Error,

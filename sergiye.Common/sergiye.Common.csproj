@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <OutputPath>bin\</OutputPath>
+    <RootNamespace>sergiye.Common</RootNamespace>
+    <Deterministic>false</Deterministic>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>SergiyE.Common</AssemblyName>
+    <AssemblyVersion>1.0.9262.0</AssemblyVersion>
+    <AssemblyTitle>SergiyE Common UI classes</AssemblyTitle>
+    <AssemblyProduct>Common</AssemblyProduct>
+    <AssemblyCompany>SergiyE</AssemblyCompany>
+    <AssemblyCopyright>Copyright © 2025 Sergiy Egoshyn</AssemblyCopyright>
+    <Authors>Sergiy Egoshin</Authors>
+    <Version>$(AssemblyVersion)</Version>
+    <Copyright>$(AssemblyCopyright)</Copyright>
+    <Company>$(AssemblyCompany)</Company>
+    <Product>$(AssemblyProduct)</Product>
+    <SignAssembly>false</SignAssembly>
+    <PackageTags>SergiyE, common</PackageTags>
+    <Description>This is a private library, don't use it in your projects!</Description>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon></PackageIcon>
+    <RepositoryUrl>https://github.com/$(AssemblyCompany)/$(AssemblyProduct)</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/$(AssemblyCompany)/$(AssemblyProduct)</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IncludeSymbols>False</IncludeSymbols>
+    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Web.Extensions" />
+  </ItemGroup>
+</Project>

@@ -31,13 +31,13 @@ namespace sergiye.Common {
     //public DateTime Updated_at { get; set; }
   }
 
-  internal static class Updater {
-    internal static readonly string ApplicationName;
-    internal static readonly string ApplicationTitle;
-    internal static readonly string ApplicationCompany;
-    internal static readonly string selfFileName;
-    internal static readonly string CurrentVersion;
-    internal static readonly string CurrentFileLocation;
+  public static class Updater {
+    public static readonly string ApplicationName;
+    public static readonly string ApplicationTitle;
+    public static readonly string ApplicationCompany;
+    public static readonly string selfFileName;
+    public static readonly string CurrentVersion;
+    public static readonly string CurrentFileLocation;
 
     static Updater() {
       var asm = Assembly.GetExecutingAssembly(); //typeof(Updater).Assembly
@@ -56,7 +56,7 @@ namespace sergiye.Common {
     public static event Func<string, bool> OnQuestion;
     public static event Action OnExit;
 
-    internal static void Subscribe(Action<string, bool> onMessage, Func<string, bool> onQuestion, Action onExit = null) {
+    public static void Subscribe(Action<string, bool> onMessage, Func<string, bool> onQuestion, Action onExit = null) {
       if (onMessage != null) OnMessage += onMessage;
       if (onQuestion != null) OnQuestion += onQuestion;
       if (onExit != null) OnExit += onExit;
@@ -69,6 +69,13 @@ namespace sergiye.Common {
       return null;
     }
 
+    private static string GetAppSiteUrl(string subPage = null) {
+      var url = $"https://github.com/{ApplicationCompany}/{ApplicationName}";
+      if (!string.IsNullOrEmpty(subPage))
+        url += "/" + subPage;
+      return url;
+    }
+    
     private static string GetAppReleasesUrl() {
       return $"https://api.github.com/repos/{ApplicationCompany}/{ApplicationName}/releases";
     }
@@ -77,7 +84,7 @@ namespace sergiye.Common {
     /// Check for a new version
     /// </summary>
     /// <returns>True if the check was completed, False if there were errors</returns>
-    internal static bool CheckForUpdates(bool silent) {
+    public static bool CheckForUpdates(bool silent) {
       try {
         string jsonString;
         using (var wc = new WebClient()) {
@@ -97,7 +104,7 @@ namespace sergiye.Common {
     /// Check for a new version
     /// </summary>
     /// <returns>True if the check was completed, False if there were errors</returns>
-    internal static async Task<bool> CheckForUpdatesAsync(bool silent) {
+    public static async Task<bool> CheckForUpdatesAsync(bool silent) {
       try {
         string jsonString;
         using (var wc = new WebClient()) {
@@ -157,7 +164,7 @@ namespace sergiye.Common {
       }
     }
 
-    internal static void RestartApp(int timeout = 0, string replaceWithFile = null) {
+    public static void RestartApp(int timeout = 0, string replaceWithFile = null) {
       var cmdFilePath = Path.GetTempPath() + $"{selfFileName}_updater.cmd";
       using (var batFile = new StreamWriter(File.Create(cmdFilePath))) {
         batFile.WriteLine("@ECHO OFF");
@@ -177,11 +184,8 @@ namespace sergiye.Common {
       Environment.Exit(0);
     }
 
-    internal static void VisitAppSite(string subPage = null) {
-      var url = $"https://github.com/{Updater.ApplicationCompany}/{Updater.ApplicationName}";
-      if (!string.IsNullOrEmpty(subPage))
-        url += "/" + subPage;
-      Process.Start(url);
+    public static void VisitAppSite(string subPage = null) {
+      Process.Start(GetAppSiteUrl(subPage));
     }
   }
 }

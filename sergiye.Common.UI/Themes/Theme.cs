@@ -151,7 +151,7 @@ namespace sergiye.Common {
       else if (control is LinkLabel linkLabel) {
         linkLabel.LinkColor = HyperlinkColor;
       }
-      else if (!OnApplyToControl(control, current)) {
+      else if (OnApplyToControl == null || !OnApplyToControl(control, current)) {
         control.BackColor = BackgroundColor;
         control.ForeColor = ForegroundColor;
       }

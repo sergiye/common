@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 
 namespace sergiye.Common {
-  internal class LightTheme : Theme {
+  public class LightTheme : Theme {
 
     public static readonly Color DefaultStatusOkColor = Color.ForestGreen;
     public static readonly Color DefaultStatusInfoColor = Color.Gray;

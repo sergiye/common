@@ -48,7 +48,7 @@ namespace sergiye.Common {
     }
   }
 
-  internal static class RegionHelper {
+  public static class RegionHelper {
 
     public enum SysGeoType {
       GEO_NATION = 0x0001,

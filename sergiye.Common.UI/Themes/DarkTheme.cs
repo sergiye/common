@@ -2,7 +2,7 @@
 
 namespace sergiye.Common {
 
-  internal class DarkTheme : Theme {
+  public class DarkTheme : Theme {
 
     public static readonly Color DefaultStatusOkColor = Color.LawnGreen;
     public static readonly Color DefaultStatusInfoColor = Color.Gold;

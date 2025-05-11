@@ -5,7 +5,7 @@ using System.Text;
 
 namespace sergiye.Common {
 
-  internal static class Crasher {
+  public static class Crasher {
 
     public static event EventHandler SaveState;
 

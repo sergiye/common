@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace sergiye.Common {
 
-  internal class CustomTheme : Theme {
+  public class CustomTheme : Theme {
     private class ThemeDto {
       public string DisplayName { get; set; }
       public string ForegroundColor { get; set; }
@@ -42,7 +42,7 @@ namespace sergiye.Common {
         : theme.DarkMode ? DarkTheme.DefaultStatusErrorColor : LightTheme.DefaultStatusErrorColor;
     }
 
-    public static IEnumerable<Theme> GetAllThemes(string resourcesPath = null) {
+    public static IEnumerable<Theme> GetAllThemes(string themesFolder = "themes", string resourcesPath = null) {
       var assembly = typeof(Theme).Assembly;
       foreach (var type in assembly.GetTypes()) {
         if (type == typeof(Theme) || !typeof(Theme).IsAssignableFrom(type))
@@ -69,7 +69,7 @@ namespace sergiye.Common {
       }
 
       var appPath = Path.GetDirectoryName(Updater.CurrentFileLocation);
-      var themesPath = Path.Combine(appPath, "Themes");
+      var themesPath = Path.Combine(appPath, themesFolder);
       var di = new DirectoryInfo(themesPath);
       //var dt = CustomTheme.ToDto(new DarkTheme());
       //Directory.CreateDirectory(themesPath);

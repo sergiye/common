@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace sergiye.Common {
 
-  internal static class WinStationHelper {
+  public static class WinStationHelper {
     private const string WINSTADLL = "winsta.dll";
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
@@ -24,7 +24,7 @@ namespace sergiye.Common {
     [DllImport(WINSTADLL, SetLastError = true)]
     private static extern bool WinStationFreeMemory(IntPtr pMemory);
 
-    internal static bool IsListenerWorking() {
+    public static bool IsListenerWorking() {
       if (!WinStationEnumerateW(IntPtr.Zero, out var ppSessionInfo, out var count))
         return false;
 

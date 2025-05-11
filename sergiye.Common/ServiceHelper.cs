@@ -3,15 +3,15 @@ using System.ServiceProcess;
 
 namespace sergiye.Common {
 
-  internal class ServiceHelper {
+  public class ServiceHelper {
 
     private readonly Logger logger;
 
-    internal ServiceHelper(Logger logger) {
+    public ServiceHelper(Logger logger) {
       this.logger = logger;
     }
 
-    internal void StopService(string serviceName, TimeSpan timeout) {
+    public void StopService(string serviceName, TimeSpan timeout) {
       using ServiceController service = new(serviceName);
       if (service.Status == ServiceControllerStatus.Stopped) return;
       logger.Log($"Terminating {serviceName}...");
@@ -20,7 +20,7 @@ namespace sergiye.Common {
       logger.Log(" Done", Logger.StateKind.Info, false);
     }
 
-    internal void StartService(string serviceName, TimeSpan timeout) {
+    public void StartService(string serviceName, TimeSpan timeout) {
       using ServiceController service = new(serviceName);
       if (service.Status == ServiceControllerStatus.Running) return;
       logger.Log($"Starting {serviceName}...");
@@ -29,7 +29,7 @@ namespace sergiye.Common {
       logger.Log(" Done", Logger.StateKind.Info, false);
     }
 
-    internal ServiceControllerStatus? GetServiceState(string serviceName) {
+    public ServiceControllerStatus? GetServiceState(string serviceName) {
       try {
         using var service = new ServiceController(serviceName);
         return service.Status;
