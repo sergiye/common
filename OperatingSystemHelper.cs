@@ -15,7 +15,7 @@ namespace sergiye.Common {
       // The operating system doesn't change during execution so let's query it just one time.
       PlatformID platform = Environment.OSVersion.Platform;
       Version version = Environment.OSVersion.Version;
-      IsUnix = platform is PlatformID.Unix or PlatformID.MacOSX;
+      IsUnix = platform == PlatformID.Unix || platform == PlatformID.MacOSX;
 
       if (Environment.Is64BitOperatingSystem)
         Is64Bit = true;

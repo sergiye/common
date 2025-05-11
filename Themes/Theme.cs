@@ -2,9 +2,6 @@
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-#if TREEVIEWADV
-using Aga.Controls.Tree;
-#endif
 using Microsoft.Win32;
 
 namespace sergiye.Common {
@@ -19,68 +16,12 @@ namespace sergiye.Common {
         foreach (Form form in Application.OpenForms) {
           current.Apply(form);
         }
-        Init();
+        OnCurrentChecnged?.Invoke();
       }
     }
 
-    private static void Init() {
-#if TREEVIEWADV
-      TreeViewAdv.CustomPlusMinusRenderFunc = (g, rect, isExpanded) => {
-        int x = rect.Left;
-        int y = rect.Top + 5;
-        int size = 8;
-        using (Brush brush = new SolidBrush(Current.BackgroundColor)) {
-          g.FillRectangle(brush, x - 1, y - 1, size + 4, size + 4);
-        }
-        using (Pen pen = new Pen(Current.TreeOutlineColor)) {
-
-          g.DrawRectangle(pen, x, y, size, size);
-          g.DrawLine(pen, x + 2, y + size / 2, x + size - 2, y + size / 2);
-          if (!isExpanded) {
-            g.DrawLine(pen, x + size / 2, y + 2, x + size / 2, y + size - 2);
-          }
-        }
-      };
-
-      TreeViewAdv.CustomCheckRenderFunc = (g, rect, isChecked) => {
-        int x = rect.Left;
-        int y = rect.Top + 1;
-        int size = 12;
-        using (Brush brush = new SolidBrush(Current.BackgroundColor)) {
-          g.FillRectangle(brush, x - 1, y - 1, 12, 12);
-        }
-        using (Pen pen = new Pen(Current.TreeOutlineColor)) {
-          g.DrawRectangle(pen, x, y, size, size);
-          if (isChecked) {
-            x += 3;
-            y += 3;
-            g.DrawLine(pen, x, y + 3, x + 2, y + 5);
-            g.DrawLine(pen, x + 2, y + 5, x + 6, y + 1);
-            g.DrawLine(pen, x, y + 4, x + 2, y + 6);
-            g.DrawLine(pen, x + 2, y + 6, x + 6, y + 2);
-          }
-        }
-      };
-
-      TreeViewAdv.CustomColumnBackgroundRenderFunc = (g, rect, isPressed, isHot) => {
-        using (Brush brush = new SolidBrush(Current.TreeBackgroundColor)) {
-          g.FillRectangle(brush, rect);
-        }
-        using (Pen pen = new Pen(Current.TreeRowSepearatorColor)) {
-          g.DrawLine(pen, rect.Left, rect.Top, rect.Right, rect.Top);
-          g.DrawLine(pen, rect.Left, rect.Top + 1, rect.Right, rect.Top + 1);
-        }
-      };
-
-      TreeViewAdv.CustomColumnTextRenderFunc = (g, rect, font, text) => {
-        TextRenderer.DrawText(g, text, font, rect, Current.TreeTextColor, TextFormatFlags.Left);
-      };
-
-      TreeViewAdv.CustomHorizontalLinePen = new Pen(Current.TreeRowSepearatorColor);
-      TreeViewAdv.CustomSelectedRowBrush = new SolidBrush(Current.TreeSelectedBackgroundColor);
-      TreeViewAdv.CustomSelectedTextColor = Current.TreeSelectedTextColor;
-#endif
-    }
+    public static Action OnCurrentChecnged;
+    public static Func<Control, Theme, bool> OnApplyToControl;
 
     public static bool SupportsAutoThemeSwitching() {
       if (OperatingSystemHelper.IsUnix) {
@@ -210,14 +151,7 @@ namespace sergiye.Common {
       else if (control is LinkLabel linkLabel) {
         linkLabel.LinkColor = HyperlinkColor;
       }
-#if TREEVIEWADV
-      else if (control is TreeViewAdv treeView) {
-        treeView.BackColor = TreeBackgroundColor;
-        treeView.ForeColor = TreeTextColor;
-        treeView.LineColor = TreeOutlineColor;
-      }
-#endif
-      else {
+      else if (!OnApplyToControl(control, current)) {
         control.BackColor = BackgroundColor;
         control.ForeColor = ForegroundColor;
       }

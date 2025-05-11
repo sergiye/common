@@ -5,9 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
-#if !NOWINFORMS
-using System.Windows.Forms;
-#endif
 
 namespace sergiye.Common {
   public class GitHubRelease {
@@ -55,6 +52,16 @@ namespace sergiye.Common {
       ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
     }
 
+    public static event Action<string, bool> OnMessage;
+    public static event Func<string, bool> OnQuestion;
+    public static event Action OnExit;
+
+    internal static void Subscribe(Action<string, bool> onMessage, Func<string, bool> onQuestion, Action onExit = null) {
+      if (onMessage != null) OnMessage += onMessage;
+      if (onQuestion != null) OnQuestion += onQuestion;
+      if (onExit != null) OnExit += onExit;
+    }
+
     private static T GetAttribute<T>(ICustomAttributeProvider assembly, bool inherit = false) where T : Attribute {
       foreach (var o in assembly.GetCustomAttributes(typeof(T), inherit))
         if (o is T attribute)
@@ -81,11 +88,7 @@ namespace sergiye.Common {
       }
       catch (Exception ex) {
         if (!silent)
-#if NOWINFORMS
-          Console.WriteLine($"Error checking for a new version.\n{ex.Message}");
-#else
-          MessageBox.Show($"Error checking for a new version.\n{ex.Message}", ApplicationName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-#endif
+          OnMessage?.Invoke($"Error checking for a new version.\n{ex.Message}", true);
         return false;
       }
     }
@@ -105,11 +108,7 @@ namespace sergiye.Common {
       }
       catch (Exception ex) {
         if (!silent)
-#if NOWINFORMS
-          Console.WriteLine($"Error checking for a new version.\n{ex.Message}");
-#else
-          MessageBox.Show($"Error checking for a new version.\n{ex.Message}", ApplicationName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-#endif
+          OnMessage?.Invoke($"Error checking for a new version.\n{ex.Message}", true);
         return false;
       }
     }
@@ -125,32 +124,22 @@ namespace sergiye.Common {
       var newVersionUrl = asset?.Browser_download_url;
       if (string.IsNullOrEmpty(newVersionUrl)) {
         if (!silent)
-#if NOWINFORMS
-          Console.WriteLine($"Your version is: {CurrentVersion}\nLatest released version is: {newVersion}\nNo assets found to update.");
-#else
-          MessageBox.Show($"Your version is: {CurrentVersion}\nLatest released version is: {newVersion}\nNo assets found to update.", ApplicationName, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-#endif
+          OnMessage?.Invoke($"Your version is: {CurrentVersion}\nLatest released version is: {newVersion}\nNo assets found to update.", false);
         return true;
       }
 
       if (string.Compare(CurrentVersion, newVersion, StringComparison.Ordinal) >= 0) {
         if (!silent)
-#if NOWINFORMS
-          Console.WriteLine($"Your version: {CurrentVersion}\nLast release: {newVersion}\nNo need to update.");
-#else
-          MessageBox.Show($"Your version: {CurrentVersion}\nLast release: {newVersion}\nNo need to update.", ApplicationName, MessageBoxButtons.OK,
-            MessageBoxIcon.Information);
-#endif
+          OnMessage?.Invoke($"Your version: {CurrentVersion}\nLast release: {newVersion}\nNo need to update.", false);
         return true;
       }
-#if NOWINFORMS
-      Console.WriteLine($"New version found: {newVersion}, app will be updated after close.");
-#else
-      if (MessageBox.Show($"Your version: {CurrentVersion}\nLast release: {newVersion}\nDownload this update?",
-        ApplicationName, MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK) {
-        return true;
+      if (OnQuestion == null) {
+        OnMessage?.Invoke($"New version found: {newVersion}, app will be updated after close.", false);
       }
-#endif
+      else {
+        if (!OnQuestion($"Your version: {CurrentVersion}\nLast release: {newVersion}\nDownload this update?"))
+          return true;
+      }
 
       try {
         var tempPath = Path.GetTempPath();
@@ -163,11 +152,7 @@ namespace sergiye.Common {
       }
       catch (Exception ex) {
         if (!silent)
-#if NOWINFORMS
-          Console.WriteLine($"Error downloading new version\n{ex.Message}");
-#else
-          MessageBox.Show($"Error downloading new version\n{ex.Message}", ApplicationName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-#endif
+          OnMessage?.Invoke($"Error downloading new version\n{ex.Message}", true);
         return false;
       }
     }
@@ -188,11 +173,8 @@ namespace sergiye.Common {
         WorkingDirectory = Path.GetTempPath()
       };
       Process.Start(startInfo);
-#if NOWINFORMS
+      OnExit?.Invoke();
       Environment.Exit(0);
-#else
-      Application.Exit();
-#endif
     }
 
     internal static void VisitAppSite(string subPage = null) {
