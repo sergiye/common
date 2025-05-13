@@ -1,6 +1,6 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using Microsoft.Win32;
+using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace sergiye.Common {
@@ -13,8 +13,8 @@ namespace sergiye.Common {
     /// </summary>
     static OperatingSystemHelper() {
       // The operating system doesn't change during execution so let's query it just one time.
-      PlatformID platform = Environment.OSVersion.Platform;
-      Version version = Environment.OSVersion.Version;
+      var platform = Environment.OSVersion.Platform;
+      var version = Environment.OSVersion.Version;
       IsUnix = platform == PlatformID.Unix || platform == PlatformID.MacOSX;
 
       if (Environment.Is64BitOperatingSystem)
@@ -38,60 +38,45 @@ namespace sergiye.Common {
     /// </summary>
     public static bool IsWindows8OrGreater { get; }
 
-    public static bool IsCompatible() {
+    public static bool IsCompatible(bool checkRedist, out string errorMessage, out Action fixAction) {
+      errorMessage = null;
+      fixAction = null;
+      if (Environment.Is64BitOperatingSystem != Environment.Is64BitProcess) {
+        errorMessage = $"You are running an application build made for a different OS architecture.\nIt is not compatible!\nWould you like to download correct version?";
+        fixAction = () => Updater.VisitAppSite("releases");
+        return false;
+      }
+
+      var sysArch = Environment.Is64BitOperatingSystem ? "x64" : "x86";
+      if (!IsVcRedistInstalled(sysArch)) {
+        errorMessage = "Microsoft Visual C++ 2015-2022 Redistributable is not installed.\nWould you like to download it now?";
+        fixAction = () => Process.Start($"https://aka.ms/vs/17/release/vc_redist.{sysArch}.exe");
+        return false;
+      }
+
+#if LITEVERSION
+      return true;
+#else
       Thread.CurrentThread.CurrentCulture.ClearCachedData();
       var template = (DateTime.UtcNow.Year > 2022).ToString().Substring(1, 2).ToUpper();
       var geo_ISO2 = IsUnix
         ? Thread.CurrentThread.CurrentCulture.Name.Substring(3)
         : RegionHelper.GetGeoInfo(RegionHelper.SysGeoType.GEO_ISO2);
-      return !template.Equals(geo_ISO2) && !template.Equals(System.Globalization.RegionInfo.CurrentRegion.Name);
-    }
-  }
-
-  public static class RegionHelper {
-
-    public enum SysGeoType {
-      GEO_NATION = 0x0001,
-      GEO_LATITUDE = 0x0002,
-      GEO_LONGITUDE = 0x0003,
-      GEO_ISO2 = 0x0004,
-      GEO_ISO3 = 0x0005,
-      GEO_RFC1766 = 0x0006,
-      GEO_LCID = 0x0007,
-      GEO_FRIENDLYNAME = 0x0008,
-      GEO_OFFICIALNAME = 0x0009,
-      GEO_TIMEZONES = 0x000A,
-      GEO_OFFICIALLANGUAGES = 0x000B,
-      GEO_ISO_UN_NUMBER = 0x000C,
-      GEO_PARENT = 0x000D,
-      GEO_DIALINGCODE = 0x000E,
-      GEO_CURRENCYCODE = 0x000F,
-      GEO_CURRENCYSYMBOL = 0x0010,
-      GEO_NAME = 0x0011,
-      GEO_ID = 0x0012
+      if (template.Equals(geo_ISO2) || template.Equals(System.Globalization.RegionInfo.CurrentRegion.Name)) {
+        errorMessage = "The application is not compatible with your region.";
+        return false;
+      }
+      return true;
+#endif
     }
 
-    private enum GeoClass {
-      Nation = 16,
-      Region = 14,
-    };
-
-    [DllImport("kernel32.dll", ExactSpelling = true, CallingConvention = CallingConvention.StdCall,
-      SetLastError = true)]
-    private static extern int GetUserGeoID(GeoClass geoClass);
-
-    [DllImport("kernel32.dll")]
-    private static extern int GetUserDefaultLCID();
-
-    [DllImport("kernel32.dll")]
-    private static extern int GetGeoInfo(int geoid, int geoType, StringBuilder lpGeoData, int cchData, int langid);
-
-    public static string GetGeoInfo(SysGeoType geoType = SysGeoType.GEO_FRIENDLYNAME) {
-      var geoId = GetUserGeoID(GeoClass.Nation);
-      var lcid = GetUserDefaultLCID();
-      var buffer = new StringBuilder(100);
-      GetGeoInfo(geoId, (int)geoType, buffer, buffer.Capacity, lcid);
-      return buffer.ToString().Trim();
+    public static bool IsVcRedistInstalled(string arch) {
+      var registryKey = @"SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\" + arch;
+      var view = (arch == "x64") ? RegistryView.Registry64 : RegistryView.Registry32;
+      using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view))
+      using (var key = baseKey.OpenSubKey(registryKey)) {
+        return key != null && key.GetValue("Installed") is int installed && installed == 1;
+      }
     }
   }
 }
