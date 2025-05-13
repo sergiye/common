@@ -127,7 +127,10 @@ namespace sergiye.Common {
 
       var lastRelease = releases.FirstOrDefault(r => !r.Prerelease) ?? releases[0];
       var newVersion = lastRelease.Tag_name;
-      var asset = lastRelease.Assets.FirstOrDefault(a => a.Name == selfFileName);
+      var asset = lastRelease.Assets.FirstOrDefault(a => selfFileName.Equals(a.Name, StringComparison.OrdinalIgnoreCase));
+      if (asset == null)
+        asset = lastRelease.Assets.FirstOrDefault(a => a.Name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase));
+      //todo: add zip assets support
       var newVersionUrl = asset?.Browser_download_url;
       if (string.IsNullOrEmpty(newVersionUrl)) {
         if (!silent)
