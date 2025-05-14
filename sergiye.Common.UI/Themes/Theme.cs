@@ -148,6 +148,13 @@ namespace sergiye.Common {
         combo.DrawItem -= ComboBox_DrawItem;
         combo.DrawItem += ComboBox_DrawItem;
       }
+      if (control is CheckBox checkBox) {
+        checkBox.ForeColor = ForegroundColor;
+        checkBox.BackColor = BackgroundColor;
+        checkBox.FlatStyle = FlatStyle.Flat;
+        checkBox.Paint -= CheckBox_DrawItem;
+        checkBox.Paint += CheckBox_DrawItem;
+      }
       else if (control is LinkLabel linkLabel) {
         linkLabel.LinkColor = HyperlinkColor;
       }
@@ -172,6 +179,34 @@ namespace sergiye.Common {
         e.Graphics.DrawString(combo.Items[e.Index].ToString(), e.Font, textBrush, e.Bounds);
       }
       e.DrawFocusRectangle();
+    }
+
+    private void CheckBox_DrawItem(object sender, PaintEventArgs e) {
+      var checkBox = sender as CheckBox;
+      if (checkBox == null) return;
+
+      e.Graphics.Clear(checkBox.BackColor);
+      var boxRect = new Rectangle(0, (checkBox.Height - 16) / 2, 16, 16);
+      var textRect = new Rectangle(20, 0, checkBox.Width - 20, checkBox.Height);
+
+      ControlPaint.DrawCheckBox(e.Graphics, boxRect, checkBox.Checked ? ButtonState.Checked : ButtonState.Normal);
+
+      if (checkBox.Checked) {
+        using (var brush = new SolidBrush(SelectedBackgroundColor)) {
+          e.Graphics.FillRectangle(brush, new Rectangle(boxRect.X + 2, boxRect.Y + 2, boxRect.Width - 4, boxRect.Height - 4));
+        }
+
+        //using (var pen = new Pen(SelectedBackgroundColor, 2)) {
+        //  var p1 = new Point(boxRect.Left + 3, boxRect.Top + boxRect.Height / 2);
+        //  var p2 = new Point(boxRect.Left + boxRect.Width / 2 - 1, boxRect.Bottom - 4);
+        //  var p3 = new Point(boxRect.Right - 3, boxRect.Top + 4);
+        //  e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        //  e.Graphics.DrawLines(pen, new[] { p1, p2, p3 });
+        //}
+      }
+
+      TextRenderer.DrawText(e.Graphics, checkBox.Text, checkBox.Font, textRect, checkBox.ForeColor,
+          TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
     }
 
     [DllImport("dwmapi.dll")]

@@ -54,7 +54,7 @@ namespace sergiye.Common {
         return false;
       }
 
-#if LITEVERSION
+#if !DEBUG
       return true;
 #else
       Thread.CurrentThread.CurrentCulture.ClearCachedData();
