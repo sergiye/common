@@ -73,13 +73,6 @@ namespace sergiye.Common {
     public virtual Color StatusInfoColor { get; protected set; }
     public virtual Color StatusErrorColor { get; protected set; }
 
-    // button
-    public virtual Color ButtonBackgroundColor => BackgroundColor;
-    public virtual Color ButtonBorderColor => ForegroundColor;
-    public virtual Color ButtonHoverBackgroundColor => SelectedBackgroundColor;
-    public virtual Color ButtonPressedBackgroundColor => LineColor;
-    public virtual Color ButtonTextColor => ForegroundColor;
-
     // menu
     public virtual Color MenuBackgroundColor => BackgroundColor;
     public virtual Color MenuBorderColor => StrongLineColor;
@@ -134,11 +127,24 @@ namespace sergiye.Common {
 
     public void Apply(Control control) {
       if (control is Button button) {
-        button.ForeColor = ButtonTextColor;
+        button.ForeColor = ForegroundColor;
         button.FlatStyle = FlatStyle.Flat;
-        button.FlatAppearance.BorderColor = ButtonBorderColor;
-        button.FlatAppearance.MouseOverBackColor = ButtonHoverBackgroundColor;
-        button.FlatAppearance.MouseDownBackColor = ButtonPressedBackgroundColor;
+        button.FlatAppearance.BorderColor = ForegroundColor;
+        button.FlatAppearance.MouseOverBackColor = SelectedBackgroundColor;
+        button.FlatAppearance.MouseDownBackColor = LineColor;
+        button.MouseEnter -= Button_MouseEnter;
+        button.MouseLeave -= Button_MouseLeave;
+        button.MouseEnter += Button_MouseEnter;
+        button.MouseLeave += Button_MouseLeave;
+        //button.MouseDown += (s, e) => {
+        //  button.ForeColor = pressedForeColor;
+        //};
+        //button.MouseUp += (s, e) => {
+        //  if (button.ClientRectangle.Contains(button.PointToClient(Cursor.Position)))
+        //    button.ForeColor = hoverForeColor;
+        //  else
+        //    button.ForeColor = defaultForeColor;
+        //};
       }
       if (control is ComboBox combo) {
         combo.ForeColor = ForegroundColor;
@@ -166,6 +172,16 @@ namespace sergiye.Common {
       foreach (Control child in control.Controls) {
         Apply(child);
       }
+    }
+
+    private void Button_MouseEnter(object sender, EventArgs e) {
+      if (sender is Button button)
+        button.ForeColor = SelectedForegroundColor;
+    }
+
+    private void Button_MouseLeave(object sender, EventArgs e) {
+      if (sender is Button button)
+        button.ForeColor = ForegroundColor;
     }
 
     private void ComboBox_DrawItem(object sender, DrawItemEventArgs e) {

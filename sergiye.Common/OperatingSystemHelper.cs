@@ -41,11 +41,6 @@ namespace sergiye.Common {
     public static bool IsCompatible(bool checkRedist, out string errorMessage, out Action fixAction) {
       errorMessage = null;
       fixAction = null;
-      if (Environment.Is64BitOperatingSystem != Environment.Is64BitProcess) {
-        errorMessage = $"You are running an application build made for a different OS architecture.\nIt is not compatible!\nWould you like to download correct version?";
-        fixAction = () => Updater.VisitAppSite("releases");
-        return false;
-      }
 
       var sysArch = Environment.Is64BitOperatingSystem ? "x64" : "x86";
       if (!IsVcRedistInstalled(sysArch)) {
