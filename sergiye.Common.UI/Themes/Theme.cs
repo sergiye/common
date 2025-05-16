@@ -73,13 +73,6 @@ namespace sergiye.Common {
     public virtual Color StatusInfoColor { get; protected set; }
     public virtual Color StatusErrorColor { get; protected set; }
 
-    // menu
-    public virtual Color MenuBackgroundColor => BackgroundColor;
-    public virtual Color MenuBorderColor => StrongLineColor;
-    public virtual Color MenuForegroundColor => ForegroundColor;
-    public virtual Color MenuSelectedBackgroundColor => SelectedBackgroundColor;
-    public virtual Color MenuSelectedForegroundColor => SelectedForegroundColor;
-
     // scrollbar
     public virtual Color ScrollbarBackground => BackgroundColor;
     public virtual Color ScrollbarTrack => StrongLineColor;
@@ -213,11 +206,12 @@ namespace sergiye.Common {
         }
 
         //using (var pen = new Pen(SelectedBackgroundColor, 2)) {
-        //  var p1 = new Point(boxRect.Left + 3, boxRect.Top + boxRect.Height / 2);
-        //  var p2 = new Point(boxRect.Left + boxRect.Width / 2 - 1, boxRect.Bottom - 4);
-        //  var p3 = new Point(boxRect.Right - 3, boxRect.Top + 4);
         //  e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-        //  e.Graphics.DrawLines(pen, new[] { p1, p2, p3 });
+        //  e.Graphics.DrawLines(pen, new[] {
+        //    new Point(boxRect.Left + 3, boxRect.Top + boxRect.Height / 2),
+        //    new Point(boxRect.Left + boxRect.Width / 2 - 1, boxRect.Bottom - 4),
+        //    new Point(boxRect.Right - 3, boxRect.Top + 4)
+        //  });
         //}
       }
 
