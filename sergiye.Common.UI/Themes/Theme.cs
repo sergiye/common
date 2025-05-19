@@ -150,9 +150,9 @@ namespace sergiye.Common {
       if (control is CheckBox checkBox) {
         checkBox.ForeColor = ForegroundColor;
         checkBox.BackColor = BackgroundColor;
-        checkBox.FlatStyle = FlatStyle.Flat;
-        checkBox.Paint -= CheckBox_DrawItem;
-        checkBox.Paint += CheckBox_DrawItem;
+        //checkBox.FlatStyle = FlatStyle.Flat;
+        //checkBox.Paint -= CheckBox_DrawItem;
+        //checkBox.Paint += CheckBox_DrawItem;
       }
       else if (control is LinkLabel linkLabel) {
         linkLabel.LinkColor = HyperlinkColor;
