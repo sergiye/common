@@ -39,6 +39,9 @@ namespace sergiye.Common {
         return;
       }
 
+      //SystemEvents.PaletteChanged += (s, e) => {
+      //};
+
       if (Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1) is int useLightTheme) {
         if (useLightTheme > 0) {
           Current = new LightTheme();
@@ -157,9 +160,20 @@ namespace sergiye.Common {
       else if (control is LinkLabel linkLabel) {
         linkLabel.LinkColor = HyperlinkColor;
       }
+      else if (control is ListBox listBox) {
+        listBox.ForeColor = ForegroundColor;
+        listBox.BackColor = BackgroundColor;
+      }
       else if (OnApplyToControl == null || !OnApplyToControl(control, current)) {
         control.BackColor = BackgroundColor;
         control.ForeColor = ForegroundColor;
+      }
+
+      if (WindowTitlebarFallbackToImmersiveDarkMode) {
+        SetWindowTheme(control.Handle, "DarkMode_Explorer", null);
+      }
+      else {
+        SetWindowTheme(control.Handle, "Explorer", null);
       }
 
       foreach (Control child in control.Controls) {
@@ -221,6 +235,9 @@ namespace sergiye.Common {
 
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+
+    [DllImport("uxtheme.dll", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Unicode)]
+    private static extern int SetWindowTheme(IntPtr hWnd, string pszSubAppName, string pszSubIdList);
 
     private const int DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19;
     private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
