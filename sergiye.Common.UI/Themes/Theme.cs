@@ -164,6 +164,39 @@ namespace sergiye.Common {
         listBox.ForeColor = ForegroundColor;
         listBox.BackColor = BackgroundColor;
       }
+      else if (control is ListView listView) {
+        control.BackColor = BackgroundColor;
+        control.ForeColor = ForegroundColor;
+        listView.OwnerDraw = true;
+        listView.DrawColumnHeader += (sender, e) => {
+          using (var backBrush = new SolidBrush(BackgroundColor))
+            e.Graphics.FillRectangle(backBrush, e.Bounds);
+          using (var foreBrush = new SolidBrush(ForegroundColor))
+            e.Graphics.DrawString(e.Header.Text, e.Font, foreBrush, e.Bounds);
+        };
+        listView.DrawSubItem += (sender, e) => {
+          e.DrawDefault = true;
+        };
+      }
+      else if (control is TabControl tabControl) {
+        control.BackColor = BackgroundColor;
+        control.ForeColor = ForegroundColor;
+        tabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
+        tabControl.DrawItem += (sender, e) => {
+          var page = tabControl.TabPages[e.Index];
+          e.Graphics.FillRectangle(new SolidBrush(page.BackColor), e.Bounds);
+          var paddedBounds = e.Bounds;
+          var yOffset = (e.State == DrawItemState.Selected) ? -2 : 1;
+          paddedBounds.Offset(1, yOffset);
+          TextRenderer.DrawText(e.Graphics, page.Text, e.Font, paddedBounds, page.ForeColor);
+        };
+      }
+      else if (control is TabPage tabPage) {
+        tabPage.UseVisualStyleBackColor = true;
+        tabPage.BorderStyle = BorderStyle.None;
+        control.BackColor = BackgroundColor;
+        control.ForeColor = ForegroundColor;
+      }
       else if (OnApplyToControl == null || !OnApplyToControl(control, current)) {
         control.BackColor = BackgroundColor;
         control.ForeColor = ForegroundColor;
