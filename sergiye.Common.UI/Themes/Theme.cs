@@ -39,22 +39,35 @@ namespace sergiye.Common {
         return;
       }
 
-      //SystemEvents.PaletteChanged += (s, e) => {
-      //};
+      if (SupportsAutoThemeSwitching())
+        SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
 
-      if (Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1) is int useLightTheme) {
-        if (useLightTheme > 0) {
+      if (AppsUseLightTheme) {
+        if (Current is not LightTheme)
           Current = new LightTheme();
-        }
-        else {
-          Current = new DarkTheme();
-        }
       }
       else {
-        // Fallback incase registry fails
-        Current = new LightTheme();
+        if (Current is not DarkTheme)
+          Current = new DarkTheme();
       }
     }
+
+    private static void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e) {
+      
+      if (AppsUseLightTheme) {
+        if (Current is LightTheme)
+          return;
+      }
+      else {
+        if (Current is DarkTheme)
+          return;
+      }
+      SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
+      SetAutoTheme();
+    }
+
+    public static bool AppsUseLightTheme =>
+      Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1) is int useLightTheme && useLightTheme > 0;
 
     protected Theme(string id, string displayName) {
       Id = id;
