@@ -9,7 +9,7 @@
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <LangVersion>latest</LangVersion>
     <AssemblyName>SergiyE.Common.UI</AssemblyName>
-    <AssemblyVersion>1.0.9262.0</AssemblyVersion>
+    <AssemblyVersion>1.0.9292.0</AssemblyVersion>
     <AssemblyTitle>SergiyE Common UI classes</AssemblyTitle>
     <AssemblyProduct>Common</AssemblyProduct>
     <AssemblyCompany>SergiyE</AssemblyCompany>

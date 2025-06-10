@@ -141,6 +141,10 @@ namespace sergiye.Common {
         //  else
         //    button.ForeColor = defaultForeColor;
         //};
+
+        //GraphicsPath p = new GraphicsPath();
+        //p.AddEllipse(-3, -3, button.Width + 2, button.Height + 2);
+        //button.Region = new Region(p);
       }
       if (control is ComboBox combo) {
         combo.ForeColor = ForegroundColor;
