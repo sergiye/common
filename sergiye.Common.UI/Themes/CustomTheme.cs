@@ -17,9 +17,9 @@ namespace sergiye.Common {
       public string LineColor { get; set; }
       public string StrongLineColor { get; set; }
       public bool DarkMode { get; set; }
-      public string StatusOkColor { get; set; }
-      public string StatusInfoColor { get; set; }
-      public string StatusErrorColor { get; set; }
+      public string MessageColor { get; set; }
+      public string InfoColor { get; set; }
+      public string WarnColor { get; set; }
     }
 
     private CustomTheme(string id, ThemeDto theme) : base(id, theme.DisplayName) {
@@ -31,15 +31,15 @@ namespace sergiye.Common {
       LineColor = ColorTranslator.FromHtml(theme.LineColor);
       StrongLineColor = ColorTranslator.FromHtml(theme.StrongLineColor);
       WindowTitlebarFallbackToImmersiveDarkMode = theme.DarkMode;
-      StatusOkColor = theme.StatusOkColor != null
-        ? ColorTranslator.FromHtml(theme.StatusOkColor)
-        : theme.DarkMode ? DarkTheme.DefaultStatusOkColor : LightTheme.DefaultStatusOkColor;
-      StatusInfoColor = theme.StatusInfoColor != null
-        ? ColorTranslator.FromHtml(theme.StatusInfoColor)
-        : theme.DarkMode ? DarkTheme.DefaultStatusInfoColor : LightTheme.DefaultStatusInfoColor;
-      StatusErrorColor = theme.StatusErrorColor != null
-        ? ColorTranslator.FromHtml(theme.StatusErrorColor)
-        : theme.DarkMode ? DarkTheme.DefaultStatusErrorColor : LightTheme.DefaultStatusErrorColor;
+      MessageColor = theme.MessageColor != null
+        ? ColorTranslator.FromHtml(theme.MessageColor)
+        : theme.DarkMode ? DarkTheme.DefaultMessageColor : LightTheme.DefaultMessageColor;
+      InfoColor = theme.InfoColor != null
+        ? ColorTranslator.FromHtml(theme.InfoColor)
+        : theme.DarkMode ? DarkTheme.DefaultInfoColor : LightTheme.DefaultInfoColor;
+      WarnColor = theme.WarnColor != null
+        ? ColorTranslator.FromHtml(theme.WarnColor)
+        : theme.DarkMode ? DarkTheme.DefaultWarnColor : LightTheme.DefaultWarnColor;
     }
 
     public static IEnumerable<Theme> GetAllThemes(string themesFolder = "themes", string resourcesPath = null) {

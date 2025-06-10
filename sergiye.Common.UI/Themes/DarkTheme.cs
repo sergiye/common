@@ -4,9 +4,9 @@ namespace sergiye.Common {
 
   public class DarkTheme : Theme {
 
-    public static readonly Color DefaultStatusOkColor = Color.LawnGreen;
-    public static readonly Color DefaultStatusInfoColor = Color.Gold;
-    public static readonly Color DefaultStatusErrorColor = Color.OrangeRed;
+    public static readonly Color DefaultMessageColor = Color.LawnGreen;
+    public static readonly Color DefaultInfoColor = Color.Gold;
+    public static readonly Color DefaultWarnColor = Color.OrangeRed;
 
     public DarkTheme() : base("dark", "Dark") {
 
@@ -18,9 +18,9 @@ namespace sergiye.Common {
       LineColor = ColorTranslator.FromHtml("#070A12");
       StrongLineColor = ColorTranslator.FromHtml("#091217");
       WindowTitlebarFallbackToImmersiveDarkMode = true;
-      StatusOkColor = DefaultStatusOkColor;
-      StatusInfoColor = DefaultStatusInfoColor;
-      StatusErrorColor = DefaultStatusErrorColor;
+      MessageColor = DefaultMessageColor;
+      InfoColor = DefaultInfoColor;
+      WarnColor = DefaultWarnColor;
     }
   }
 }

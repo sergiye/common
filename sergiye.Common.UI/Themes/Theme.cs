@@ -85,9 +85,9 @@ namespace sergiye.Common {
     public virtual Color SelectedForegroundColor { get; protected set; }
 
     // statuses
-    public virtual Color StatusOkColor { get; protected set; }
-    public virtual Color StatusInfoColor { get; protected set; }
-    public virtual Color StatusErrorColor { get; protected set; }
+    public virtual Color MessageColor { get; protected set; }
+    public virtual Color InfoColor { get; protected set; }
+    public virtual Color WarnColor { get; protected set; }
 
     // scrollbar
     public virtual Color ScrollbarBackground => BackgroundColor;
@@ -255,8 +255,7 @@ namespace sergiye.Common {
     }
 
     private void CheckBox_DrawItem(object sender, PaintEventArgs e) {
-      var checkBox = sender as CheckBox;
-      if (checkBox == null) return;
+      if (sender is not CheckBox checkBox) return;
 
       e.Graphics.Clear(checkBox.BackColor);
       var boxRect = new Rectangle(0, (checkBox.Height - 16) / 2, 16, 16);
@@ -268,15 +267,14 @@ namespace sergiye.Common {
         using (var brush = new SolidBrush(SelectedBackgroundColor)) {
           e.Graphics.FillRectangle(brush, new Rectangle(boxRect.X + 2, boxRect.Y + 2, boxRect.Width - 4, boxRect.Height - 4));
         }
-
-        //using (var pen = new Pen(SelectedBackgroundColor, 2)) {
-        //  e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-        //  e.Graphics.DrawLines(pen, new[] {
-        //    new Point(boxRect.Left + 3, boxRect.Top + boxRect.Height / 2),
-        //    new Point(boxRect.Left + boxRect.Width / 2 - 1, boxRect.Bottom - 4),
-        //    new Point(boxRect.Right - 3, boxRect.Top + 4)
-        //  });
-        //}
+        using (var pen = new Pen(SelectedForegroundColor, 2)) {
+          e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+          e.Graphics.DrawLines(pen, new[] {
+            new Point(boxRect.Left + 3, boxRect.Top + boxRect.Height / 2),
+            new Point(boxRect.Left + boxRect.Width / 2 - 1, boxRect.Bottom - 4),
+            new Point(boxRect.Right - 3, boxRect.Top + 4)
+          });
+        }
       }
 
       TextRenderer.DrawText(e.Graphics, checkBox.Text, checkBox.Font, textRect, checkBox.ForeColor,
