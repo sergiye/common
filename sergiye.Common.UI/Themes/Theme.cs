@@ -17,6 +17,7 @@ namespace sergiye.Common {
           current.Apply(form);
         }
         OnCurrentChecnged?.Invoke();
+        SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
       }
     }
 
@@ -39,9 +40,6 @@ namespace sergiye.Common {
         return;
       }
 
-      if (SupportsAutoThemeSwitching())
-        SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
-
       if (AppsUseLightTheme) {
         if (Current is not LightTheme)
           Current = new LightTheme();
@@ -49,6 +47,11 @@ namespace sergiye.Common {
       else {
         if (Current is not DarkTheme)
           Current = new DarkTheme();
+      }
+
+      if (SupportsAutoThemeSwitching()) {
+        SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
+        SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
       }
     }
 
@@ -62,7 +65,6 @@ namespace sergiye.Common {
         if (Current is DarkTheme)
           return;
       }
-      SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
       SetAutoTheme();
     }
 
