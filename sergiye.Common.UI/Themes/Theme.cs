@@ -8,15 +8,24 @@ namespace sergiye.Common {
 
   public abstract class Theme {
 
-    private static Theme current = new LightTheme();
+    public const string SkipThemeTag = "sergiye.Common.Theme.SkipThemeTag";
+
+    private static Theme current;
     public static Theme Current {
-      get => current;
+      get {
+        if (current == null) {
+          current = new LightTheme();
+          CurrentColorsChanged();
+        }
+        return current;
+      }
+
       set {
         current = value;
         foreach (Form form in Application.OpenForms) {
           current.Apply(form);
         }
-        OnCurrentChecnged?.Invoke();
+        CurrentColorsChanged();
         SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
       }
     }
@@ -187,34 +196,53 @@ namespace sergiye.Common {
         control.BackColor = BackgroundColor;
         control.ForeColor = ForegroundColor;
         listView.OwnerDraw = true;
-        listView.DrawColumnHeader += (sender, e) => {
-          using (var backBrush = new SolidBrush(BackgroundColor))
-            e.Graphics.FillRectangle(backBrush, e.Bounds);
-          using (var foreBrush = new SolidBrush(ForegroundColor))
-            e.Graphics.DrawString(e.Header.Text, e.Font, foreBrush, e.Bounds);
-        };
-        listView.DrawSubItem += (sender, e) => {
-          e.DrawDefault = true;
-        };
+        listView.DrawColumnHeader -= ListView_DrawColumnHeader;
+        listView.DrawColumnHeader += ListView_DrawColumnHeader;
+        listView.DrawSubItem -= ListView_DrawSubItem;
+        listView.DrawSubItem += ListView_DrawSubItem;
       }
       else if (control is TabControl tabControl) {
         control.BackColor = BackgroundColor;
         control.ForeColor = ForegroundColor;
-        tabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
-        tabControl.DrawItem += (sender, e) => {
-          var page = tabControl.TabPages[e.Index];
-          e.Graphics.FillRectangle(new SolidBrush(page.BackColor), e.Bounds);
-          var paddedBounds = e.Bounds;
-          var yOffset = (e.State == DrawItemState.Selected) ? -2 : 1;
-          paddedBounds.Offset(1, yOffset);
-          TextRenderer.DrawText(e.Graphics, page.Text, e.Font, paddedBounds, page.ForeColor);
-        };
+        if (control.Tag == SkipThemeTag) {
+
+        }
+        else {
+          tabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
+          tabControl.DrawItem -= TabControl_DrawItem;
+          tabControl.DrawItem += TabControl_DrawItem;
+        }
       }
       else if (control is TabPage tabPage) {
         tabPage.UseVisualStyleBackColor = true;
         tabPage.BorderStyle = BorderStyle.None;
         control.BackColor = BackgroundColor;
         control.ForeColor = ForegroundColor;
+      }
+      else if (control is GroupBox groupBox) {
+        //groupBox.UseCompatibleTextRendering = true;
+        //groupBox.FlatStyle = FlatStyle.Flat;
+        groupBox.BackColor = BackgroundColor;
+        groupBox.ForeColor = ForegroundColor;
+      }
+      else if (control is PropertyGrid propertyGrid) {
+        propertyGrid.BackColor = BackgroundColor;
+        propertyGrid.ForeColor = ForegroundColor;
+        propertyGrid.CategoryForeColor = ForegroundColor;
+        propertyGrid.CategorySplitterColor = LineColor;
+        propertyGrid.CommandsActiveLinkColor = HyperlinkColor;
+        propertyGrid.CommandsDisabledLinkColor = InfoColor;
+        propertyGrid.CommandsLinkColor = HyperlinkColor;
+        propertyGrid.CommandsBackColor = BackgroundColor;
+        propertyGrid.CommandsBorderColor = LineColor;
+        propertyGrid.CommandsForeColor = ForegroundColor;
+        propertyGrid.DisabledItemForeColor = InfoColor;
+        propertyGrid.LineColor = LineColor;
+        propertyGrid.SelectedItemWithFocusBackColor = SelectedBackgroundColor;
+        propertyGrid.SelectedItemWithFocusForeColor = SelectedForegroundColor;
+        propertyGrid.ViewBackColor = BackgroundColor;
+        propertyGrid.ViewBorderColor = StrongLineColor;
+        propertyGrid.ViewForeColor = ForegroundColor;
       }
       else if (OnApplyToControl == null || !OnApplyToControl(control, current)) {
         control.BackColor = BackgroundColor;
@@ -233,6 +261,27 @@ namespace sergiye.Common {
       }
     }
 
+    private static void CurrentColorsChanged() {
+
+      backBrush = new SolidBrush(current.BackgroundColor);
+      foreBrush = new SolidBrush(current.ForegroundColor);
+      selectedBackBrush = new SolidBrush(current.SelectedBackgroundColor);
+      selectedForeBrush = new SolidBrush(current.SelectedForegroundColor);
+      selectedForePen = new Pen(current.SelectedForegroundColor, 2);
+
+      OnCurrentChecnged?.Invoke();
+    }
+
+    #region Draw resources
+
+    private static Brush backBrush;
+    private static Brush foreBrush;
+    private static Brush selectedBackBrush;
+    private static Brush selectedForeBrush;
+    private static Pen selectedForePen;
+
+    #endregion
+
     private void Button_MouseEnter(object sender, EventArgs e) {
       if (sender is Button button)
         button.ForeColor = SelectedForegroundColor;
@@ -247,12 +296,8 @@ namespace sergiye.Common {
       if (e.Index < 0) return;
       if (sender is not ComboBox combo) return;
       var isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-      using (var backgroundBrush = new SolidBrush(isSelected ? SelectedBackgroundColor : combo.BackColor)) {
-        e.Graphics.FillRectangle(backgroundBrush, e.Bounds);
-      }
-      using (var textBrush = new SolidBrush(isSelected ? SelectedForegroundColor : combo.ForeColor)) {
-        e.Graphics.DrawString(combo.Items[e.Index].ToString(), e.Font, textBrush, e.Bounds);
-      }
+      e.Graphics.FillRectangle(isSelected ? selectedBackBrush : backBrush, e.Bounds);
+      e.Graphics.DrawString(combo.Items[e.Index].ToString(), e.Font, isSelected ? selectedForeBrush : foreBrush, e.Bounds);
       e.DrawFocusRectangle();
     }
 
@@ -266,21 +311,62 @@ namespace sergiye.Common {
       ControlPaint.DrawCheckBox(e.Graphics, boxRect, checkBox.Checked ? ButtonState.Checked : ButtonState.Normal);
 
       if (checkBox.Checked) {
-        using (var brush = new SolidBrush(SelectedBackgroundColor)) {
-          e.Graphics.FillRectangle(brush, new Rectangle(boxRect.X + 2, boxRect.Y + 2, boxRect.Width - 4, boxRect.Height - 4));
-        }
-        using (var pen = new Pen(SelectedForegroundColor, 2)) {
-          e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-          e.Graphics.DrawLines(pen, new[] {
-            new Point(boxRect.Left + 3, boxRect.Top + boxRect.Height / 2),
-            new Point(boxRect.Left + boxRect.Width / 2 - 1, boxRect.Bottom - 4),
-            new Point(boxRect.Right - 3, boxRect.Top + 4)
-          });
-        }
+        e.Graphics.FillRectangle(selectedBackBrush, new Rectangle(boxRect.X + 2, boxRect.Y + 2, boxRect.Width - 4, boxRect.Height - 4));
+        e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        e.Graphics.DrawLines(selectedForePen, new[] {
+          new Point(boxRect.Left + 3, boxRect.Top + boxRect.Height / 2),
+          new Point(boxRect.Left + boxRect.Width / 2 - 1, boxRect.Bottom - 4),
+          new Point(boxRect.Right - 3, boxRect.Top + 4)
+        });
       }
 
       TextRenderer.DrawText(e.Graphics, checkBox.Text, checkBox.Font, textRect, checkBox.ForeColor,
           TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
+    }
+
+    private void ListView_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e) {
+      e.Graphics.FillRectangle(backBrush, e.Bounds);
+      e.Graphics.DrawString(e.Header.Text, e.Font, foreBrush, e.Bounds);
+    }
+
+    private void ListView_DrawSubItem(object sender, DrawListViewSubItemEventArgs e) {
+      var lView = sender as ListView;
+      TextFormatFlags flags = GetTextAlignment(lView, e.ColumnIndex);
+      Color itemColor = e.Item.ForeColor;
+
+      if (e.Item.Selected) {
+        if (e.ColumnIndex == 0 || lView.FullRowSelect) {
+          e.Graphics.FillRectangle(selectedBackBrush, e.Bounds);
+          itemColor = SelectedForegroundColor;
+        }
+      }
+      else {
+        e.DrawBackground();
+      }
+      TextRenderer.DrawText(e.Graphics, e.SubItem.Text, e.SubItem.Font, e.Bounds, itemColor, flags);
+    }
+
+    private void TabControl_DrawItem(object sender, DrawItemEventArgs e) {
+      if (sender is not TabControl tabControl) return;
+      var page = tabControl.TabPages[e.Index];
+      e.Graphics.FillRectangle(backBrush, e.Bounds);
+      var paddedBounds = e.Bounds;
+      var yOffset = (e.State == DrawItemState.Selected) ? -2 : 1;
+      paddedBounds.Offset(1, yOffset);
+      TextRenderer.DrawText(e.Graphics, page.Text, e.Font, paddedBounds, ForegroundColor);
+    }
+
+    private TextFormatFlags GetTextAlignment(ListView lstView, int colIndex) {
+      TextFormatFlags flags = (lstView.View == View.Tile)
+          ? (colIndex == 0) ? TextFormatFlags.Default : TextFormatFlags.Bottom
+          : TextFormatFlags.VerticalCenter;
+
+      if (lstView.View == View.Details) flags |= TextFormatFlags.LeftAndRightPadding;
+
+      if (lstView.Columns[colIndex].TextAlign != HorizontalAlignment.Left) {
+        flags |= (TextFormatFlags)((int)lstView.Columns[colIndex].TextAlign ^ 3);
+      }
+      return flags;
     }
 
     [DllImport("dwmapi.dll")]
